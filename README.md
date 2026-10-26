@@ -2,6 +2,8 @@
 
 A **free Windows resource-monitoring dashboard** developed by **Dillard's Digital Solutions**. This is an early public beta for testing and feedback.
 
+> **Working title / naming notice (October 26, 2026):** "Laptop Resource Monitor" is a provisional project name, **not the final or official product name**, and may change before a general release. No dedicated domain name has been purchased or announced for this product. The GitHub repository and release links below are the current official download locations for this beta. Naming, domain availability, and any applicable trademark rights have **not been represented as cleared or secured**. This notice does not establish trademark protection.
+
 ![Memory Overview design preview](docs/preview-memory.png)
 
 ## Download
