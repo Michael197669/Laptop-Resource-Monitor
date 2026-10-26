@@ -15,6 +15,16 @@ Open the [latest GitHub release](../../releases/latest), download **LaptopResour
 - No paid account, API key, or subscription is required.
 - This public beta is **not code-signed**. Windows SmartScreen or antivirus software may warn about an unfamiliar executable. Download only from the official GitHub release and check the published SHA-256 hash. Do not disable security software just to run it.
 
+## Optional support / PayPal
+
+The program is **completely free**. Voluntary contributions are never required, and no feature is locked behind payment.
+
+A **Support development** button appears on the right side of the app's tab bar. It opens an official PayPal checkout **in your web browser**, not an in-app credit-card form. Payment information is never collected by this program.
+
+**PayPal setup status:** the project's verified PayPal Business donation/payment URL has not been added yet. Until the project owner verifies and configures it, clicking the button shows a clear "not yet configured" message; it does not collect money or take users to an unverified recipient.
+
+Once the owner adds a verified HTTPS PayPal link to \`donation.json\` in this repository, the existing EXE will resolve it when a user clicks the button. The software never contacts that configuration address automatically; a network request is only made after the user elects to support the project. The URL must use an approved PayPal host and path. Payment fees, currency options, and eligibility are governed by PayPal and may depend on the business account and donor's country.
+
 ## Three dashboard tabs
 
 **Memory Overview** — RAM, CPU, optional NVIDIA GPU temperature/load/VRAM, application groups, memory history, and top memory-consuming processes.
@@ -26,7 +36,7 @@ Open the [latest GitHub release](../../releases/latest), download **LaptopResour
 ## Privacy and safety
 
 - Operates on **your own computer** and binds to **127.0.0.1** only; it is not a remotely accessible service.
-- No analytics, telemetry, user accounts, cloud sync, or advertising.
+- No analytics, telemetry, user accounts, cloud sync, or advertising. The **Support development** button performs a one-time GitHub configuration lookup only when clicked, then opens the verified PayPal site if configured.
 - Process command lines and startup registrations may contain sensitive local paths. They are displayed **only on your computer**; do not share unredacted screenshots publicly.
 - CPU and GPU metrics are estimates; NVIDIA GPU data requires a working `nvidia-smi` executable.
 - Process and startup inventories are **not exhaustive**. The app is not a replacement for Windows Task Manager, antivirus, or a professional diagnostic tool.
@@ -76,4 +86,4 @@ The executable is placed at `dist\LaptopResourceMonitor.exe`.
 
 MIT License — copyright 2026 Dillard's Digital Solutions.
 
-**Version: 0.1.0-beta**. This is a prototype undergoing real-world testing; use at your own risk.
+**Version: 0.1.1-beta**. This is a prototype undergoing real-world testing; use at your own risk.

@@ -1,7 +1,7 @@
 """Laptop Resource Monitor - local-only dashboard and safe manual controls.
 Python 3.11 + psutil. Binds 127.0.0.1 only. No remote management endpoint.
 """
-import csv, ctypes, datetime as dt, json, os, pathlib, re, secrets, subprocess, sys, threading, time, urllib.parse, winreg
+import csv, ctypes, datetime as dt, json, os, pathlib, re, secrets, subprocess, sys, threading, time, urllib.parse, urllib.request, html, winreg
 from collections import Counter, defaultdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import psutil
@@ -45,6 +45,41 @@ SAFE_START_NAMES = ("btweb","MicrosoftEdgeAutoLaunch_")
 def log(message):
     with (LOGS / "dashboard-actions.log").open("a",encoding="utf-8") as f:
         f.write("%s %s\n" % (dt.datetime.now().isoformat(timespec="seconds"),message))
+
+# Optional voluntary support is processed ONLY on the official PayPal website.
+# The public GitHub configuration lets us enable the button once a verified
+# business-owned payment link exists, without a new downloadable EXE.
+SUPPORT_CONFIG_URL = "https://raw.githubusercontent.com/Michael197669/Laptop-Resource-Monitor/main/donation.json"
+
+def verified_paypal_url(candidate):
+    if not isinstance(candidate, str) or len(candidate) > 500:
+        return None
+    try:
+        p = urllib.parse.urlsplit(candidate.strip())
+        if p.scheme.lower() != "https" or p.username or p.password or p.fragment:
+            return None
+        host=(p.hostname or "").lower()
+        path=p.path.lower()
+        if host in ("paypal.me", "www.paypal.me") and path.strip("/"):
+            return candidate.strip()
+        if host in ("www.paypal.com","paypal.com") and (
+            path.startswith("/donate") or path.startswith("/ncp/payment/")
+        ):
+            return candidate.strip()
+        return None
+    except (ValueError,AttributeError):
+        return None
+
+def paypal_support_link():
+    """Called only after a user clicks Support. No automatic external requests."""
+    try:
+        request=urllib.request.Request(SUPPORT_CONFIG_URL,headers={"User-Agent":"LaptopResourceMonitor/0.1"})
+        with urllib.request.urlopen(request,timeout=5) as response:
+            raw=response.read(4096)
+        obj=json.loads(raw.decode("utf-8"))
+        return verified_paypal_url(obj.get("paypal_url"))
+    except (OSError,ValueError,UnicodeError,KeyError,TimeoutError):
+        return None
 
 def safe(proc_name, command):
     n=proc_name.lower()
@@ -262,6 +297,34 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
     def do_GET(self):
         path=urllib.parse.urlsplit(self.path).path
+        if path=="/support/paypal":
+            link=paypal_support_link()
+            if link:
+                self.send_response(302)
+                self.send_header("Location",link)
+                self.send_header("Cache-Control","no-store")
+                self.send_header("Referrer-Policy","no-referrer")
+                self.send_header("X-Content-Type-Options","nosniff")
+                self.end_headers()
+            else:
+                page=('<!doctype html><html lang="en"><meta charset="utf-8">'
+                      '<title>Support Development</title>'
+                      '<meta name="viewport" content="width=device-width,initial-scale=1">'
+                      '<style>body{margin:0;background:#0c1727;color:#e7f4ff;'
+                      'font:18px Segoe UI,Arial,sans-serif;display:grid;place-items:center;'
+                      'min-height:95vh}main{padding:28px;border:1px solid #344a64;'
+                      'background:#16263c;border-radius:13px;max-width:540px}'
+                      'h1{font-size:27px}p{line-height:1.6;color:#bfcee1}'
+                      'a{color:#86beff}</style><main><h1>Support development</h1>'
+                      '<p>Thank you for considering a voluntary contribution. '
+                      'The official PayPal payment link has not been configured '
+                      'yet. No payment has been requested or collected.</p>'
+                      '<p>The software remains free. '
+                      '<a href="https://github.com/Michael197669/Laptop-Resource-Monitor">'
+                      'Project updates</a></p></main></html>').encode("utf-8")
+                self.headers_common(200,"text/html; charset=utf-8")
+                self.wfile.write(page)
+            return
         if path=="/api/state":
             with LOCK:out=json.dumps(STATE).encode("utf-8")
             self.headers_common();self.wfile.write(out);return

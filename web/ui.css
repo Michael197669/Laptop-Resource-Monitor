@@ -356,3 +356,12 @@ main{padding:10px;min-height:0}
  .pv-table tbody tr{height:44px}
  .pv-table th{height:36px}
 }
+
+/* Voluntary support, separated from system monitoring features. */
+.tabs .support-button{margin-left:auto;align-self:center;display:inline-flex;gap:9px;align-items:center;justify-content:center;height:37px;padding:0 16px;
+ background:#1d3650;border:1px solid #477b9e;border-radius:20px;color:#d5edff;font:600 13px "Segoe UI",Arial,sans-serif;
+ white-space:nowrap;text-decoration:none;transition:background-color .15s}
+.tabs .support-button:hover,.tabs .support-button:focus-visible{background:#25577f;color:#fff;outline:2px solid #75bafa;outline-offset:1px}
+.tabs .support-button span{color:#56cbbb;font-size:19px}
+@media(max-width:1280px){.tabs .support-button{font-size:11px;padding:0 9px;height:31px;gap:5px}}
+@media(max-width:1100px){.tabs .support-button{font-size:0;width:38px;min-width:38px;padding:0}.tabs .support-button span{font-size:20px}}
