@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"><title>Laptop Resource Monitor</title><link rel="stylesheet" href="/ui.css"></head><body>
+<div class="app">
+<header class="header"><div class="brand"><div class="logo">⌁</div><div><h1>Laptop Resource Monitor</h1><div class="sub">Live system overview and safe manual controls</div></div></div><div class="notice"><span class="info">i</span><span><strong>System actions restricted to safe items only.</strong><small>Critical Windows and connected services remain protected.</small></span></div></header>
+<nav class="tabs"><button class="tab active" data-tab="overview"><b>▥</b> Memory Overview</button><button class="tab" data-tab="processes"><b>☷</b> Running Background Processes</button><button class="tab" data-tab="startup"><b>◯</b> Starts With Windows</button></nav>
+<main>
+<section class="page active" id="overview">
+<div class="metric-row">
+ <article class="panel metric ram-card"><h3>▣ &nbsp; RAM Usage</h3><div class="ram-layout"><div><div class="donut" id="ram-ring"><div class="inside" id="ram-percent">—%</div></div><div class="donut-caption" id="ram-summary">Collecting…</div></div><div class="metric-facts"><div>Total RAM <strong id="ram-total">—</strong></div><div>In use <strong id="ram-used">—</strong></div><div>Available <strong id="ram-avail">—</strong></div><div>Status <strong id="ram-status">—</strong></div></div></div></article>
+ <article class="panel metric cpu-card"><h3>▦ &nbsp; CPU Usage</h3><div class="cpu-gauge"><div class="donut cpu-donut" id="cpu-ring"><div class="inside" id="cpu-value">—%</div></div></div><div class="sparkline" id="cpu-spark"></div><small>Live processor usage</small></article>
+ <article class="panel metric"><h3>♧ &nbsp; GPU Temperature</h3><div class="metric-number" id="gpu-temp">—°C</div><div class="thermo"><div id="thermo-fill"></div></div><small>NVIDIA GPU temperature</small></article>
+ <article class="panel metric"><h3>◇ &nbsp; GPU Load</h3><div class="metric-number" id="gpu-load">—%</div><div class="sparkline" id="gpu-spark"></div><small>Graphics utilization</small></article>
+ <article class="panel metric vram-card"><h3>▤ &nbsp; VRAM Usage</h3><div class="donut vram" id="vram-ring"><div class="inside" id="vram-percent">—%</div></div><div class="donut-caption" id="vram-summary">— MB</div><small>Dedicated GPU memory</small></article>
+</div>
+<article class="panel group-panel"><div class="panel-top"><h2>▦ &nbsp; Memory Usage by Application</h2><span class="minor-button">Group by application ▾</span></div><div class="groups" id="groups"></div></article>
+<div class="overview-bottom">
+ <article class="panel trend-card"><div class="panel-top"><h2>⌁ &nbsp; Memory Usage Trend</h2><span class="minor-button">Last 60 minutes ▾</span></div><div class="trend-layout"><div class="trend-svg"><div class="grid-y"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div><svg id="memory-chart" viewBox="0 0 700 270" preserveAspectRatio="none"><defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3888f2" stop-opacity=".48"/><stop offset="100%" stop-color="#3888f2" stop-opacity=".05"/></linearGradient></defs><path class="grid" d="M0 0H700 M0 67.5H700 M0 135H700 M0 202.5H700 M0 270H700"/><path id="area-path" fill="url(#fade)"/><path id="line-path" class="drawn-line"/></svg><div class="grid-x"><span>60m ago</span><span>45m</span><span>30m</span><span>15m</span><span>Now</span></div></div><div class="trend-facts"><div><span>Current</span><strong id="trend-now">—</strong></div><div><span>Average (1h)</span><strong id="trend-average">—</strong></div><div><span>Peak (1h)</span><strong id="trend-peak">—</strong></div><div><span>Lowest (1h)</span><strong id="trend-low">—</strong></div></div></div></article>
+ <article class="panel top-card"><div class="panel-top"><h2>☷ &nbsp; Top Individual Processes</h2></div><div class="table-scroll"><table class="small-table"><thead><tr><th>Process name</th><th>PID</th><th>Memory</th></tr></thead><tbody id="top-processes"><tr><td colspan="3">Collecting data…</td></tr></tbody></table></div></article>
+</div>
+</section>
+<section class="page" id="processes">
+<div class="pv-layout">
+ <div class="pv-main">
+  <div class="pv-tools">
+   <div class="pv-search-box"><span class="pv-search-icon">⌕</span><input id="process-search" type="search" autocomplete="off" placeholder="Search processes, apps, or descriptions…" aria-label="Search processes"></div>
+   <select id="pv-scope" aria-label="Process category"><option value="All">All processes</option><option value="Main">Main applications</option><option value="Helper">Helper processes</option></select>
+   <div class="pv-filters" role="group" aria-label="Safety filter">
+    <button class="pv-filter active" data-filter="All">All <span id="ct-all">0</span></button>
+    <button class="pv-filter" data-filter="Safe"><i class="pv-shield safe">✓</i>Safe <span id="ct-safe">0</span></button>
+    <button class="pv-filter" data-filter="Review"><i class="pv-shield review">!</i>Review <span id="ct-review">0</span></button>
+    <button class="pv-filter" data-filter="Protected"><i class="pv-shield protected">◆</i>Protected <span id="ct-protected">0</span></button>
+   </div>
+  </div>
+  <article class="panel pv-table-panel">
+   <div class="pv-table-title"><h2>Running Background Processes</h2><span id="process-caption">Live process list</span></div>
+   <div class="pv-table-scroll"><table class="pv-table">
+    <colgroup><col class="pv-col-check"><col class="pv-col-status"><col class="pv-col-app"><col class="pv-col-purpose"><col class="pv-col-pid"><col class="pv-col-cpu"><col class="pv-col-ram"><col class="pv-col-type"><col class="pv-col-source"></colgroup>
+    <thead><tr><th class="pv-th-check">□</th><th>Safe</th><th>Process name <span class="pv-sort">⌃</span></th><th>Purpose</th><th>PID</th><th>CPU</th><th>RAM</th><th>Type</th><th>Command source</th></tr></thead>
+    <tbody id="process-rows"><tr><td colspan="9">Loading processes…</td></tr></tbody>
+   </table></div>
+  </article>
+ </div>
+ <aside class="pv-aside">
+  <button id="pv-kill-top" class="pv-primary" disabled><span class="pv-trash">▢</span> Kill selected safe process</button>
+  <p class="pv-action-caption">Only safe, non-system processes can be terminated from this UI. Critical processes are protected.</p>
+  <article class="panel pv-detail-card">
+   <div class="pv-detail-title"><h2>Process Details</h2><span class="pv-chevron">‹</span></div>
+   <div class="pv-detail-scroll" id="process-info"><p class="pv-placeholder">Select a running process to see its name, purpose and safety details.</p></div>
+   <div class="pv-aside-actions">
+    <button id="kill-btn" class="pv-primary" disabled>▢ &nbsp; Kill this process</button>
+    <button id="pv-open-file" class="pv-secondary" disabled>▱ &nbsp; Open file location</button>
+    <button id="proc-refresh" class="pv-tertiary">↻ &nbsp; Refresh process list</button>
+   </div>
+  </article>
+ </aside>
+</div>
+</section>
+<section class="page" id="startup">
+<div class="sv-kpis">
+ <article class="panel sv-kpi sv-total">
+  <div class="sv-kpi-title"><span class="sv-symbol blue">▦</span><h3>Total Startup Items</h3></div>
+  <div class="sv-kpi-body"><div><strong id="startup-total">—</strong><p>Items registered to start<br>with Windows</p></div><div class="sv-mini-squares" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ </article>
+ <article class="panel sv-kpi sv-enabled">
+  <div class="sv-kpi-title"><span class="sv-symbol green">▷</span><h3>Enabled Items</h3></div>
+  <div class="sv-kpi-body"><div><strong id="startup-enabled">—</strong><p>Start automatically<br>at login</p></div><div class="sv-ring sv-blue-ring" id="enabled-ring"><div class="sv-ring-inner" id="enabled-pct">—%</div></div></div>
+ </article>
+ <article class="panel sv-kpi sv-disabled">
+  <div class="sv-kpi-title"><span class="sv-symbol cyan">Ⅱ</span><h3>Disabled Items</h3></div>
+  <div class="sv-kpi-body"><div><strong id="startup-disabled">—</strong><p>Currently disabled</p></div><div class="sv-ring sv-teal-ring" id="disabled-ring"><div class="sv-ring-inner" id="disabled-pct">—%</div></div></div>
+ </article>
+ <article class="panel sv-kpi sv-impact">
+  <div class="sv-kpi-title"><span class="sv-symbol blue">ϟ</span><h3>Estimated Startup Impact</h3></div>
+  <strong id="startup-impact">Not measured</strong>
+  <div class="sv-impact-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p>Impact measurement unavailable</p>
+ </article>
+ <article class="panel sv-kpi sv-boot">
+  <div class="sv-kpi-title"><span class="sv-symbol blue">◷</span><h3>Last Boot Time</h3></div>
+  <strong id="startup-uptime">—</strong>
+  <p>Since last startup</p>
+  <small id="startup-boot">—</small>
+  <span id="uptime" hidden></span>
+ </article>
+</div>
+<div class="sv-content">
+ <article class="panel sv-items">
+  <div class="sv-section-header"><h2><span class="sv-symbol blue">☷</span>Startup Items</h2><div class="sv-search-wrap"><span>⌕</span><input id="startup-search" class="sv-search" placeholder="Search startup items…" aria-label="Search startup items"></div></div>
+  <div class="sv-table-scroll"><table class="sv-table">
+   <colgroup><col style="width:14%"><col style="width:25%"><col style="width:18%"><col style="width:14%"><col style="width:14%"><col style="width:15%"></colgroup>
+   <thead><tr><th>Status</th><th>Startup Item <span class="sv-sort">⌃</span></th><th>Launch Method</th><th>Startup Impact</th><th>Safe to Disable</th><th>Source / Action</th></tr></thead>
+   <tbody id="startup-rows"><tr><td colspan="6">Loading startup entries…</td></tr></tbody>
+  </table></div>
+ </article>
+ <aside class="panel sv-details">
+  <div class="sv-detail-heading"><h2><span class="sv-symbol blue">▣</span>Startup Item Details</h2></div>
+  <div class="sv-detail-scroll" id="startup-info"><div class="sv-placeholder">Select an item to view its details.</div></div>
+  <div class="sv-action-area">
+   <button class="sv-primary" id="disable-btn" disabled><span>⏻</span> Disable selected safe startup item</button>
+   <button class="sv-secondary" id="startup-refresh">↻ Refresh startup entries</button>
+   <div class="sv-disclaimer"><span>ℹ</span><p>Only optional non-system entries can be disabled. Protected Windows services, NAS connections, medical tools, remote access, and ASUS Virtual Pet remain unchanged.</p></div>
+  </div>
+ </aside>
+</div>
+</section>
+</main>
+<footer><span id="footer-status"><i class="online">●</i> Connecting to this laptop…</span><span>Local-only system monitor <b>•</b> Readings are live estimates <b>•</b> No automatic process termination</span></footer>
+</div>
+<div id="dialog" class="modal-cover" hidden><div class="modal panel" role="dialog" aria-modal="true"><h2 id="dialog-title">Confirm</h2><p id="dialog-message"></p><div class="dialog-buttons"><button id="cancel" class="secondary-button">Cancel</button><button id="confirm" class="action-button">Confirm</button></div></div></div><div id="toast" class="toast" aria-live="polite"></div>
+<script src="/ui.js"></script></body></html>
